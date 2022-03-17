@@ -11,10 +11,10 @@ const AudioElem = ({ audios, index, setAudios }) => {
     useEffect(() => {
         switch (type) {
             case "silence":
-                setDuration(10);
+                setDuration(duration || 10);
                 break;
             case "standard":
-                setAudioPath('/audios/1.mp3');
+                setAudioPath(audioPath || '/audios/bip.mp3');
                 break;
             case "import":
                 setFile(null);
@@ -68,9 +68,9 @@ const AudioElem = ({ audios, index, setAudios }) => {
                         {type == "silence" && <input type="number" className="input" value={duration} onChange={handleSilenceLength} />}
                         {type == "standard" && (
                             <div className="select">
-                                <select value={audioPath || '/audios/1.mp3'} onChange={handleStandardFileSelected} >
-                                    <option value="/audios/1.mp3">1er fichier</option>
-                                    <option value="/audios/2.mp3">2e fichier</option>
+                                <select value={audioPath || '/audios/delfInstruction.mp3'} onChange={handleStandardFileSelected} >
+                                    <option value="/audios/bip.mp3">bip</option>
+                                    <option value="/audios/delfInstruction.mp3">Instruction delf</option>
                                 </select>
                             </div>
                         )}

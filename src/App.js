@@ -8,10 +8,23 @@ function App() {
   const sampleRate = 48000;
 
   const crunker = new Crunker({ sampleRate });
-  const SilentAudio = { name: "Silence 10s", type: "silence", duration: 10, path: null, file: null };
+  const SilentAudio2min = { name: "Silence 2min", type: "silence", duration: 120, path: null, file: null };
+  const SilentAudio1min30 = { name: "Silence 1min30", type: "silence", duration: 90, path: null, file: null };
+  const instruction = { name: "delf", type: "standard", duration: null, path: '/audios/delfInstruction.mp3', file: null };
+  const bip = { name: "bip", type: "standard", duration: null, path: '/audios/bip.mp3', file: null };
   const initialAudios = [
-    { name: "audio2", type: "standard", duration: null, path: 'audios/2.mp3', file: null },
-    SilentAudio,
+    instruction,
+    bip,
+    SilentAudio2min,
+    bip,
+    { name: "import", type: "import", duration: null, path: null, file: null },
+    bip,
+    SilentAudio1min30,
+    bip,
+    { name: "import", type: "import", duration: null, path: null, file: null },
+    bip,
+    SilentAudio2min,
+    bip
   ]
   const [audioUpToDate, setAudioUpToDate] = useState(false);
   const [audios, setAudios] = useState(initialAudios);
@@ -91,6 +104,15 @@ function App() {
               </div>
             </div>
             <div className="card-content">
+              <div className="box">
+                Quelques liens utiles:
+                <br />
+                <a href="https://online-audio-converter.com/fr/">Récupérer l'audio d'une vidéo</a>
+                <br />
+                <a href="https://online-voice-recorder.com/fr/">S'enregistrer avec un micro</a>
+                <br />
+                <a href="https://www.soundjay.com/">Bruitages et bruit de fond</a>
+              </div>
               {audios.map((audio, index) => { return <AudioElem key={index} setAudios={setAudios} audios={audios} index={index} /> })}
               <hr />
               <button className="button" onClick={addAudios}>
