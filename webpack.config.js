@@ -1,10 +1,14 @@
 const path = require('path');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+
 module.exports = {
     entry: ['babel-polyfill', path.join(__dirname, "src", "index.js")],
     output: {
         path: path.resolve(__dirname, "build"),
-        publicPath: './'
+        // publicPath: path.resolve(__dirname, "build"),
+        publicPath: '',
+        globalObject: 'this',
     },
 
     module: {
@@ -23,7 +27,9 @@ module.exports = {
             },
             {
                 test: /\.css$/i,
-                use: ["style-loader", "css-loader"],
+                //use: ["css-loader"],
+                //use: ["style-loader", "css-loader"],
+                use: [MiniCssExtractPlugin.loader, "css-loader"],
             },
             {
                 test: /\.(png|jp(e*)g|svg|gif)$/,
@@ -35,9 +41,9 @@ module.exports = {
             },
         ]
     },
-    plugins: [
-        new HtmlWebpackPlugin({
-            template: path.join(__dirname, "public", "index.html"),
-        }),
+    plugins: [new MiniCssExtractPlugin(),
+    new HtmlWebpackPlugin({
+        template: path.join(__dirname, "public", "index.html"),
+    }),
     ],
 }

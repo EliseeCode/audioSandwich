@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import Crunker from 'crunker';
 import { createSilentAudio } from 'create-silent-audio';
