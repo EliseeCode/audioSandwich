@@ -74,7 +74,7 @@ const AudioElem = ({ audios, index, setAudios }) => {
                                 </select>
                             </div>
                         )}
-                        {type == "record" && <button className="button" onClick={record} >Record</button>}
+                        {/* {type == "record" && <button className="button" onClick={record} >Record</button>} */}
                     </div>
                 </div>
             </div>
