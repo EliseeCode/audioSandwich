@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { createSilentAudio } from 'create-silent-audio';
 
-const AudioElem = ({ audios, index, setAudios }) => {
-    const audio = audios[index];
+const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
+    const audio = audios.filter((audio) => { return audio.id == id })[0];
     const [type, setType] = useState(audio.type);
     const [duration, setDuration] = useState(audio.duration);
     const [audioPath, setAudioPath] = useState(audio.path);
@@ -24,14 +24,14 @@ const AudioElem = ({ audios, index, setAudios }) => {
                 break;
         }
     }, [type])
+
     useEffect(() => {
-        var newAudio = { 'name': index, duration, type, file, path: audioPath }
-        setAudios(audios.map((originAudio, i) => { return i == index ? newAudio : originAudio; }));
+        console.log(audios);
+        var newAudio = { 'name': id, duration, type, file, path: audioPath, id: audios.length + 1 }
+        setAudios(audios.map((originAudio, i) => { return originAudio.id == id ? newAudio : originAudio; }));
     }, [audioPath, duration, file])
 
-    function record() {
 
-    }
     function HandleChangeAudioType(event) {
         setType(event.target.value);
     }
@@ -46,13 +46,14 @@ const AudioElem = ({ audios, index, setAudios }) => {
             setDuration(event.target.value);
         }
     }
-    function deleteAudio() {
-        setAudios(audios.filter((originAudio, i) => { return i != index }));
-    }
+
     return (
         <div className="level">
             <div className="level-left">
                 <div className="field has-addons level-item">
+                    <div className="control">
+                        {id}
+                    </div>
                     <div className="control">
                         <div className="select">
                             <select onChange={HandleChangeAudioType} value={type}>
@@ -80,7 +81,7 @@ const AudioElem = ({ audios, index, setAudios }) => {
             </div>
             <div className="level-right">
                 <div className="control level-item">
-                    <button className="button is-danger" onClick={deleteAudio}>Supprimer</button>
+                    <button className="button is-danger" onClick={() => { deleteAudio(id) }}>Supprimer</button>
                 </div>
             </div>
         </div>

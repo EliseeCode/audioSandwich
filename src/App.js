@@ -13,35 +13,39 @@ function App() {
   const instruction = { name: "delf", type: "standard", duration: null, path: '/audios/delfInstruction.mp3', file: null };
   const bip = { name: "bip", type: "standard", duration: null, path: '/audios/bip.mp3', file: null };
   const initialAudios = [
-    instruction,
-    bip,
-    SilentAudio2min,
-    bip,
-    { name: "import", type: "import", duration: null, path: null, file: null },
-    bip,
-    SilentAudio1min30,
-    bip,
-    { name: "import", type: "import", duration: null, path: null, file: null },
-    bip,
-    SilentAudio2min,
-    bip
+    { ...instruction, id: 0 },
+    { ...bip, id: 1 },
+    { ...SilentAudio2min, id: 2 },
+    { ...bip, id: 3 },
+    { name: "import", type: "import", duration: null, path: null, file: null, id: 4 },
+    { ...bip, id: 5 },
+    { ...SilentAudio1min30, id: 6 },
+    { ...bip, id: 7 },
+    { name: "import", type: "import", duration: null, path: null, file: null, id: 8 },
+    { ...bip, id: 9 },
+    { ...SilentAudio2min, id: 10 },
+    { ...bip, id: 11 },
   ]
   const [audioUpToDate, setAudioUpToDate] = useState(false);
-  const [audios, setAudios] = useState(initialAudios);
+  const [audios, setAudios] = useState([...initialAudios]);
   const [currentSong, setcurrentSong] = useState(null);
   const [isplaying, setisPlaying] = useState(false)
   var audioElem = useRef('audioElem');
-
+  var output;
   async function preview() {
-    const output = await buildSource();
+    $('.loader-wrapper').addClass('is-active');
+    output = await buildSource();
     console.log(output);
     setcurrentSong(output.url);
     setAudioUpToDate(true);
+    $('.loader-wrapper').removeClass('is-active');
   }
 
   const downloadAudios = async () => {
-    const output = await buildSource();
+    $('.loader-wrapper').addClass('is-active');
+    //const output = await buildSource();
     await crunker.download(output.blob, "delfAudio");
+    $('.loader-wrapper').removeClass('is-active');
   }
 
   async function buildSource() {
@@ -73,6 +77,13 @@ function App() {
 
   }
 
+  function deleteAudio(id) {
+    console.log(audios);
+    var newAudios = audios.filter((audio) => { return audio.id != id });
+    console.log(newAudios)
+    setAudios(newAudios);
+  }
+
   useEffect(() => {
     setAudioUpToDate(false);
   }, [audios])
@@ -88,7 +99,7 @@ function App() {
   }, [isplaying])
 
   const addAudios = async () => {
-    setAudios([...audios, SilentAudio])
+    setAudios([...audios, { name: "Silence 10s", type: "silence", duration: 10, path: null, file: null, id: audios.length }])
   }
 
 
@@ -113,14 +124,17 @@ function App() {
                 <br />
                 <a href="https://www.soundjay.com/">Bruitages et bruit de fond</a>
               </div>
-              {audios.map((audio, index) => { return <AudioElem key={index} setAudios={setAudios} audios={audios} index={index} /> })}
+              {audios.map((audio, index) => { return <AudioElem key={audio.id} deleteAudio={deleteAudio} setAudios={setAudios} audios={audios} id={audio.id} /> })}
               <hr />
               <button className="button" onClick={addAudios}>
                 Ajouter Audio
               </button>
             </div>
 
-            <div className="card-footer">
+            <div className="card-footer" style={{ position: 'relative' }}>
+              <div className="card-footer-item loader-wrapper">
+                <div className="loader is-loading"></div>
+              </div>
               <div className="card-footer-item">
                 <audio ref={audioElem} className={audioUpToDate ? "" : "hidden"} src={currentSong} controls></audio>
                 <button className={`${audioUpToDate ? "hidden" : ""} button is-primary`} onClick={preview}>
