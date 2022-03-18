@@ -27,7 +27,7 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
 
     useEffect(() => {
         console.log(audios);
-        var newAudio = { 'name': id, duration, type, file, path: audioPath, id: audios.length + 1 }
+        var newAudio = { 'name': id, duration, type, file, path: audioPath, id: id }
         setAudios(audios.map((originAudio, i) => { return originAudio.id == id ? newAudio : originAudio; }));
     }, [audioPath, duration, file])
 
@@ -48,7 +48,7 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
     }
 
     return (
-        <div className="level">
+        <div className="level box">
             <div className="level-left">
                 <div className="field has-addons level-item">
                     <div className="control">

@@ -28,7 +28,8 @@ function App() {
   const [audioUpToDate, setAudioUpToDate] = useState(false);
   const [audios, setAudios] = useState([...initialAudios]);
   const [currentSong, setcurrentSong] = useState(null);
-  const [isplaying, setisPlaying] = useState(false)
+  const [isplaying, setisPlaying] = useState(false);
+  const [nextId, setNextId] = useState(null);
   var audioElem = useRef('audioElem');
   var output;
   async function preview() {
@@ -83,8 +84,10 @@ function App() {
     setAudios(newAudios);
   }
 
+
   useEffect(() => {
     setAudioUpToDate(false);
+    setNextId(Math.max(...audios.map((audio) => { return audio.id; })) + 1)
   }, [audios])
 
   useEffect(() => {
@@ -98,7 +101,7 @@ function App() {
   }, [isplaying])
 
   const addAudios = async () => {
-    setAudios([...audios, { name: "Silence 10s", type: "silence", duration: 10, path: null, file: null, id: audios.length }])
+    setAudios([...audios, { name: "Silence 10s", type: "silence", duration: 10, path: null, file: null, id: nextId }])
   }
 
 
@@ -115,13 +118,15 @@ function App() {
             </div>
             <div className="card-content">
               <div className="box">
-                Quelques liens utiles:
-                <br />
-                <a href="https://online-audio-converter.com/fr/">Récupérer l'audio d'une vidéo</a>
-                <br />
-                <a href="https://online-voice-recorder.com/fr/">S'enregistrer avec un micro</a>
-                <br />
-                <a href="https://www.soundjay.com/">Bruitages et bruit de fond</a>
+                <div className="content">
+                  Quelques liens utiles:
+                  <br />
+                  <a href="https://online-audio-converter.com/fr/">Récupérer l'audio d'une vidéo</a>
+                  <br />
+                  <a href="https://online-voice-recorder.com/fr/">S'enregistrer avec un micro</a>
+                  <br />
+                  <a href="https://www.soundjay.com/">Bruitages et bruit de fond</a>
+                </div>
               </div>
               {audios.map((audio, index) => { return <AudioElem key={audio.id} deleteAudio={deleteAudio} setAudios={setAudios} audios={audios} id={audio.id} /> })}
               <hr />

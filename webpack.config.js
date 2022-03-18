@@ -1,7 +1,7 @@
 const path = require('path');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-
+const CopyPlugin = require("copy-webpack-plugin");
 module.exports = {
     entry: ['babel-polyfill', path.join(__dirname, "src", "index.js")],
     output: {
@@ -41,9 +41,17 @@ module.exports = {
             },
         ]
     },
-    plugins: [new MiniCssExtractPlugin(),
-    new HtmlWebpackPlugin({
-        template: path.join(__dirname, "public", "index.html"),
-    }),
+    plugins: [
+        new CopyPlugin({
+            patterns: [
+                { from: "public/css", to: "css" },
+                { from: "public/js", to: "js" },
+                { from: "public/audios", to: "audios" }
+            ],
+        }),
+        new MiniCssExtractPlugin(),
+        new HtmlWebpackPlugin({
+            template: path.join(__dirname, "public", "index.html"),
+        }),
     ],
 }
