@@ -26,38 +26,54 @@ function App() {
     { ...bip, id: 11 },
   ]
   const [audioUpToDate, setAudioUpToDate] = useState(false);
+  //const [isValid, setIsValid] = useState(true);
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [audios, setAudios] = useState([...initialAudios]);
   const [currentSong, setcurrentSong] = useState(null);
   const [isplaying, setisPlaying] = useState(false);
   const [nextId, setNextId] = useState(null);
+  const [output, setOutput] = useState(null);
   var audioElem = useRef('audioElem');
-  var output;
+
+
   async function preview() {
-    $('.loader-wrapper').addClass('is-active');
-    output = await buildSource();
-    console.log(output);
-    setcurrentSong(output.url);
-    setAudioUpToDate(true);
-    $('.loader-wrapper').removeClass('is-active');
+    setIsLoadingPreview(true);
   }
+  useEffect(async () => {
+    if (isLoadingPreview) {
+      console.log('isLoading');
+      setOutput(await buildSource());
+      console.log('buildsource done');
+    }
+  }, [isLoadingPreview])
+
+  useEffect(() => {
+    console.log('effectOutput');
+    if (output != null) {
+      console.log('output not null');
+      setcurrentSong(output.url);
+      console.log('setcurrentsong');
+      setAudioUpToDate(true);
+      setIsLoadingPreview(false);
+    }
+  }, [output])
+
 
   const downloadAudios = async () => {
     $('.loader-wrapper').addClass('is-active');
-    //const output = await buildSource();
+    //output = await buildSource();
     await crunker.download(output.blob, "delfAudio");
     $('.loader-wrapper').removeClass('is-active');
   }
 
   async function buildSource() {
-    console.log(audios);
-
     var crunkerInputs = [];
     for (let k = 0; k < audios.length; k++) {
       let audio = audios[k];
       console.log(audio);
       switch (audio.type) {
         case "silence":
-          crunkerInputs.push(createSilentAudio(audio.duration, 44100));
+          crunkerInputs.push(await createSilentAudio(audio.duration, 44100));
           break;
         case "standard":
           crunkerInputs.push(audio.path);
@@ -65,16 +81,16 @@ function App() {
         case "import":
           //console.log('arrayBuffer', await crunker._context.decodeAudioData(await audio.file.arrayBuffer()))
           //await crunkerInputs.push(await crunker._context.decodeAudioData(await audio.file.arrayBuffer()));
-          crunkerInputs.push(audio.file);
+          if (audio.file != null) {
+            crunkerInputs.push(audio.file);
+          }
           break;
       }
     }
 
     const buffers = await crunker.fetchAudio(...crunkerInputs);
     const merged = await crunker["concatAudio"](buffers);
-    const output = await crunker.export(merged, 'audio/mp3');
-    return output;
-
+    return await crunker.export(merged, 'audio/mp3');
   }
 
   function deleteAudio(id) {
@@ -87,7 +103,13 @@ function App() {
 
   useEffect(() => {
     setAudioUpToDate(false);
-    setNextId(Math.max(...audios.map((audio) => { return audio.id; })) + 1)
+    setNextId(Math.max(...audios.map((audio) => { return audio.id; })) + 1);
+    let v = true;
+    for (let k = 0; k < audios.length; k++) {
+      if (audios[k].type == "import" && audios[k].file == null) { v = false; }
+    }
+    //setIsValid(v);
+    console.log(audios);
   }, [audios])
 
   useEffect(() => {
@@ -136,8 +158,9 @@ function App() {
             </div>
 
             <div className="card-footer" style={{ position: 'relative' }}>
-              <div className="card-footer-item loader-wrapper">
-                <div className="loader is-loading"></div>
+
+              <div className={`card-footer-item loader-wrapper ${isLoadingPreview && 'is-active'}`}>
+                <div className={`loader`}></div>
               </div>
               <div className="card-footer-item">
                 <audio ref={audioElem} className={audioUpToDate ? "" : "hidden"} src={currentSong} controls></audio>

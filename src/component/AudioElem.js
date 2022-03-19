@@ -8,6 +8,7 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
     const [audioPath, setAudioPath] = useState(audio.path);
     const [file, setFile] = useState(audio.file);
 
+
     useEffect(() => {
         switch (type) {
             case "silence":
@@ -29,7 +30,7 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
         console.log(audios);
         var newAudio = { 'name': id, duration, type, file, path: audioPath, id: id }
         setAudios(audios.map((originAudio, i) => { return originAudio.id == id ? newAudio : originAudio; }));
-    }, [audioPath, duration, file])
+    }, [audioPath, duration, file, type])
 
 
     function HandleChangeAudioType(event) {
