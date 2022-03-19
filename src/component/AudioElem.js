@@ -60,7 +60,7 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
                             <select onChange={HandleChangeAudioType} value={type}>
                                 <option value="silence">Silence</option>
                                 <option value="import">Importer un fichier audio</option>
-                                <option value="record">Enregistrer audio</option>
+                                {/* <option value="record">Enregistrer audio</option> */}
                                 <option value="standard">Choisir un son</option>
                             </select>
                         </div>
