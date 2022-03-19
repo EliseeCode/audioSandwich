@@ -67,7 +67,7 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
                     </div>
                     <div className="control">
                         {type == "import" && <input type="file" className="input" onChange={handleFileSelected} />}
-                        {type == "silence" && <input type="number" className="input" value={duration} onChange={handleSilenceLength} />}
+                        {type == "silence" && (<div><input type="number" style={{ width: '150px' }} className="input" value={duration} onChange={handleSilenceLength} /><span style={{ display: "inline-flex", alignItems: "center", height: "40px" }}>secondes</span></div>)}
                         {type == "standard" && (
                             <div className="select">
                                 <select value={audioPath || '/audios/delfInstruction.mp3'} onChange={handleStandardFileSelected} >
