@@ -1,0 +1,45 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Deploying
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script_stop: true
+          script: |
+            # Copy and build new version
+            cd /home/elisee/www
+            rm -rf audioSandwitch-new
+            cp -r audioSandwitch audioSandwitch-new
+            cd audioSandwitch-new
+            git checkout main
+            git reset --hard origin/main
+            git pull
+            #npm rebuild
+            npm install
+            # Build the api
+            npm run build
+            #cp .env build/.env
+            # Run migrations
+            #node ace migration:run --force
+            #node ace db:seed --force
+            # Replace current version with the new one
+            cd ..
+            mv audioSandwitch audioSandwitch-old
+            mv audioSandwitch-new audioSandwitch
+            # Restart server
+            cd audioSandwitch
+            rm -rf ../audioSandwitch-old
