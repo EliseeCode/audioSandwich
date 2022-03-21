@@ -28,7 +28,6 @@ jobs:
             git checkout main
             git reset --hard origin/main
             git pull
-            #npm rebuild
             npm install
             # Build the api
             npm run build
