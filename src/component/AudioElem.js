@@ -120,25 +120,29 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
                 </div>
             </div>
             <div className="level-right">
-                <div className="controllevel-item">
-                    {isPlaying ? (<>
-                        <button onClick={pause} className="button">
-                            <span className="icon">
-                                <i className="fas fa-pause"></i>
-                            </span>
-                        </button>
-                        <button onClick={stop} className="button">
-                            <span className="icon">
-                                <i className="fas fa-stop"></i>
-                            </span>
-                        </button></>
-                    ) : (
-                        <button className="button" onClick={play}>
-                            <span className="icon">
-                                <i className="fas fa-play"></i>
-                            </span>
-                        </button>
-                    )}
+
+                <div className="control level-item">
+                    {(type != "silence" && audioPath != null) && (
+                        isPlaying ? (<>
+                            <button onClick={pause} className="button">
+                                <span className="icon">
+                                    <i className="fas fa-pause"></i>
+                                </span>
+                            </button>
+                            <button onClick={stop} className="button">
+                                <span className="icon">
+                                    <i className="fas fa-stop"></i>
+                                </span>
+                            </button></>
+                        ) : (
+                            <button className="button" onClick={play}>
+                                <span className="icon">
+                                    <i className="fas fa-play"></i>
+                                </span>
+                            </button>
+                        )
+                    )
+                    }
                     <audio controls style={{ display: "none" }} ref={audioReader} onEnded={stop}><source src={audioPath}></source></audio>
                 </div>
                 <div className="control level-item ml-3">
