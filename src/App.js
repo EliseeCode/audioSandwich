@@ -10,6 +10,7 @@ function App() {
   const SilentAudio2min = { name: "Silence 2min", type: "silence", duration: 120, path: null, file: null };
   const SilentAudio1min30 = { name: "Silence 1min30", type: "silence", duration: 90, path: null, file: null };
   const instruction = { name: "delf", type: "standard", duration: null, path: '/audios/delfInstruction.mp3', file: null };
+  const fin = { name: "fin delf", type: "standard", duration: null, path: '/audios/fin.mp3', file: null };
   const bip = { name: "bip", type: "standard", duration: null, path: '/audios/bip.mp3', file: null };
   const initialAudios = [
     { ...instruction, id: 0 },
@@ -23,7 +24,7 @@ function App() {
     { name: "import", type: "import", duration: null, path: null, file: null, id: 8 },
     { ...bip, id: 9 },
     { ...SilentAudio2min, id: 10 },
-    { ...bip, id: 11 },
+    { ...fin, id: 11 },
   ]
   const [audioUpToDate, setAudioUpToDate] = useState(false);
   //const [isValid, setIsValid] = useState(true);
