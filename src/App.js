@@ -141,10 +141,12 @@ function App() {
             </div>
             <div className="card-content">
               <div className="box">
-                <div className="content">
+                <div className="content" style={{ fontSize: '0.7em' }}>
                   Quelques liens utiles:
                   <br />
                   <a href="https://online-audio-converter.com/fr/">Récupérer l'audio d'une vidéo</a>
+                  <br />
+                  <a href="https://mp3y.download/fr/easy-youtube-convert">Récupérer l'audio d'une vidéo Youtube</a>
                   <br />
                   <a href="https://online-voice-recorder.com/fr/">S'enregistrer avec un micro</a>
                   <br />

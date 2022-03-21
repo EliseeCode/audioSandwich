@@ -86,7 +86,7 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
         }
     }
     return (
-        <div className="level box">
+        <div className="level box mb-1">
             <div className="level-left">
                 <div className="field has-addons level-item">
                     <div className="control">
