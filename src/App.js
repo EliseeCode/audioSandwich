@@ -3,33 +3,19 @@ import Crunker from 'crunker';
 import { createSilentAudio } from 'create-silent-audio';
 import { useRef, useState, useEffect } from 'react';
 import AudioElem from './component/AudioElem';
+import { initialAudioOrder, initialAudios } from './component/initialData';
+import { DragDropContext, Droppable } from 'react-beautiful-dnd';
 function App() {
   const sampleRate = 48000;
 
   const crunker = new Crunker({ sampleRate });
-  const SilentAudio2min = { name: "Silence 2min", type: "silence", duration: 120, path: null, file: null };
-  const SilentAudio1min30 = { name: "Silence 1min30", type: "silence", duration: 90, path: null, file: null };
-  const instruction = { name: "delf", type: "standard", duration: null, path: '/audios/delfInstruction.mp3', file: null };
-  const fin = { name: "fin delf", type: "standard", duration: null, path: '/audios/fin.mp3', file: null };
-  const bip = { name: "bip", type: "standard", duration: null, path: '/audios/bip.mp3', file: null };
-  const initialAudios = [
-    { ...instruction, id: 0 },
-    { ...bip, id: 1 },
-    { ...SilentAudio2min, id: 2 },
-    { ...bip, id: 3 },
-    { name: "import", type: "import", duration: null, path: null, file: null, id: 4 },
-    { ...bip, id: 5 },
-    { ...SilentAudio1min30, id: 6 },
-    { ...bip, id: 7 },
-    { name: "import", type: "import", duration: null, path: null, file: null, id: 8 },
-    { ...bip, id: 9 },
-    { ...SilentAudio2min, id: 10 },
-    { ...fin, id: 11 },
-  ]
+
+  const [audios, setAudios] = useState(initialAudios);
+  const [audioOrder, setAudioOrder] = useState(initialAudioOrder);
+
   const [audioUpToDate, setAudioUpToDate] = useState(false);
-  //const [isValid, setIsValid] = useState(true);
+  const [progress, setProgress] = useState(0);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
-  const [audios, setAudios] = useState([...initialAudios]);
   const [currentSong, setcurrentSong] = useState(null);
   const [isplaying, setisPlaying] = useState(false);
   const [nextId, setNextId] = useState(null);
@@ -42,18 +28,13 @@ function App() {
   }
   useEffect(async () => {
     if (isLoadingPreview) {
-      console.log('isLoading');
       setOutput(await buildSource());
-      console.log('buildsource done');
     }
   }, [isLoadingPreview])
 
   useEffect(() => {
-    console.log('effectOutput');
     if (output != null) {
-      console.log('output not null');
       setcurrentSong(output.url);
-      console.log('setcurrentsong');
       setAudioUpToDate(true);
       setIsLoadingPreview(false);
     }
@@ -66,52 +47,62 @@ function App() {
     await crunker.download(output.blob, "delfAudio");
     $('.loader-wrapper').removeClass('is-active');
   }
-
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
   async function buildSource() {
-    var crunkerInputs = [];
-    for (let k = 0; k < audios.length; k++) {
-      let audio = audios[k];
-      console.log(audio);
-      switch (audio.type) {
-        case "silence":
-          crunkerInputs.push(await createSilentAudio(audio.duration, 44100));
-          break;
-        case "standard":
-          crunkerInputs.push(audio.path);
-          break;
-        case "import":
-          //console.log('arrayBuffer', await crunker._context.decodeAudioData(await audio.file.arrayBuffer()))
-          //await crunkerInputs.push(await crunker._context.decodeAudioData(await audio.file.arrayBuffer()));
-          if (audio.file != null) {
-            crunkerInputs.push(audio.file);
-          }
-          break;
+    try {
+      var crunkerInputs = [];
+      for (let k = 0; k < audioOrder.length; k++) {
+        let audio = audios[audioOrder[k]];
+        console.log(audio);
+        switch (audio.type) {
+          case "silence":
+            crunkerInputs.push(await createSilentAudio(audio.duration, 44100));
+            break;
+          case "standard":
+            crunkerInputs.push(audio.path);
+            break;
+          case "import":
+            //console.log('arrayBuffer', await crunker._context.decodeAudioData(await audio.file.arrayBuffer()))
+            //await crunkerInputs.push(await crunker._context.decodeAudioData(await audio.file.arrayBuffer()));
+            if (audio.file != null) {
+              crunkerInputs.push(audio.file);
+            }
+            break;
+        }
+        setProgress(k * 90 / audioOrder.length);
+        await sleep(1);
+        console.log(k * 90 / audioOrder.length);
       }
-    }
 
-    const buffers = await crunker.fetchAudio(...crunkerInputs);
-    const merged = await crunker["concatAudio"](buffers);
-    return await crunker.export(merged, 'audio/mp3');
+      const buffers = await crunker.fetchAudio(...crunkerInputs);
+      setProgress(95);
+      await sleep(1);
+      const merged = await crunker["concatAudio"](buffers);
+      setProgress(99);
+      await sleep(1);
+      return await crunker.export(merged, 'audio/mp3');
+    }
+    catch (error) {
+      console.log(error);
+      setIsLoadingPreview(true);
+    }
   }
 
   function deleteAudio(id) {
-    console.log(audios);
-    var newAudios = audios.filter((audio) => { return audio.id != id });
-    console.log(newAudios)
-    setAudios(newAudios);
+    var newAudioOrder = audioOrder.filter((AudioId) => { return AudioId != id });
+
+    setAudioOrder(newAudioOrder);
   }
 
 
   useEffect(() => {
-    setAudioUpToDate(false);
-    setNextId(Math.max(...audios.map((audio) => { return audio.id; })) + 1);
-    let v = true;
-    for (let k = 0; k < audios.length; k++) {
-      if (audios[k].type == "import" && audios[k].file == null) { v = false; }
+    if (audioUpToDate) {
+      setNextId(Math.max(...audioOrder) + 1);
+      setAudioUpToDate(false);
     }
-    //setIsValid(v);
-    console.log(audios);
-  }, [audios])
+  }, [audios, audioOrder])
 
   useEffect(() => {
     if (isplaying) {
@@ -124,10 +115,24 @@ function App() {
   }, [isplaying])
 
   const addAudios = async () => {
-    setAudios([...audios, { name: "Silence 10s", type: "silence", duration: 10, path: null, file: null, id: nextId }])
+    setAudios({ ...audios, [nextId]: { name: "Silence 10s", type: "silence", duration: 10, path: null, file: null, id: nextId } });
+    setAudioOrder([...audioOrder, nextId]);
   }
 
+  function onDragEnd(result) {
+    const { source, destination } = result;
+    if (!destination) {
+      return;
+    }
+    if (source.index == destination.index) { return; }
 
+    const srcId = audioOrder[source.index];
+
+    const newAudioOrder = Array.from(audioOrder);
+    newAudioOrder.splice(source.index, 1);
+    newAudioOrder.splice(destination.index, 0, srcId);
+    setAudioOrder([...newAudioOrder])
+  }
   return (
     <div className="App">
       <header className="App-header">
@@ -153,7 +158,21 @@ function App() {
                   <a href="https://www.soundjay.com/">Bruitages et bruit de fond</a>
                 </div>
               </div>
-              {audios.map((audio, index) => { return <AudioElem key={audio.id} deleteAudio={deleteAudio} setAudios={setAudios} audios={audios} id={audio.id} /> })}
+              <DragDropContext onDragEnd={onDragEnd}>
+                <Droppable droppableId={"droppable"}>
+                  {
+                    (provided) => {
+                      console.log(provided);
+                      return (<div ref={provided.innerRef} {...provided.droppableProps}>{
+                        audioOrder.map((audioId, index) => {
+                          return <AudioElem key={audioId} index={index} deleteAudio={deleteAudio} setAudios={setAudios} audios={audios} id={audioId} />
+                        })}
+                        {provided.placeholder}
+                      </div>)
+                    }
+                  }
+                </Droppable>
+              </DragDropContext>
               <hr />
               <button className="button" onClick={addAudios}>
                 Ajouter Audio
@@ -163,7 +182,8 @@ function App() {
             <div className="card-footer" style={{ position: 'relative' }}>
 
               <div className={`card-footer-item loader-wrapper ${isLoadingPreview && 'is-active'}`}>
-                <div className={`loader`}></div>
+                {/* <div className={`loader`}></div><br /> */}
+                <progress className="progress is-primary" style={{ transition: '0.3s' }} value={progress} max="100">{progress}%</progress>
               </div>
               <div className="card-footer-item">
                 <audio ref={audioElem} className={audioUpToDate ? "" : "hidden"} src={currentSong} controls></audio>

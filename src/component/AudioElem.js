@@ -1,8 +1,8 @@
 import { useEffect, useState, useRef } from 'react';
-import { createSilentAudio } from 'create-silent-audio';
+import { Draggable } from "react-beautiful-dnd";
 
-const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
-    const audio = audios.filter((audio) => { return audio.id == id })[0];
+const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
+    const audio = audios[id];
     const [type, setType] = useState(audio.type);
     const [duration, setDuration] = useState(audio.duration);
     const [audioPath, setAudioPath] = useState(audio.path);
@@ -30,7 +30,7 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
 
     useEffect(() => {
         var newAudio = { 'name': id, duration, type, file, path: audioPath, id: id }
-        setAudios(audios.map((originAudio, i) => { return originAudio.id == id ? newAudio : originAudio; }));
+        setAudios({ ...audios, [id]: newAudio });
     }, [audioPath, duration, file, type])
 
     useEffect(() => {
@@ -44,13 +44,37 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
     }, [file])
 
     useEffect(() => {
-        if (type == "import" && file != null) {
-            if (audioReader.current) {
-                audioReader.current.pause();
-                audioReader.current.load();
-            }
+        if (audioReader.current) {
+            audioReader.current.pause();
+            audioReader.current.load();
         }
     }, [audioPath])
+
+    const grid = 8;
+
+    const getItemStyle = (isDragging, draggableStyle) => {
+        const { transform } = draggableStyle;
+        let activeTransform = {};
+        if (transform) {
+            activeTransform = {
+                transform: `translate(0, ${transform.substring(
+                    transform.indexOf(',') + 1,
+                    transform.indexOf(')')
+                )})`
+            };
+        }
+        return {
+            // some basic styles to make the items look a bit nicer
+
+            // change background colour if dragging
+            background: isDragging ? 'lightgreen' : 'white',
+
+            // styles we need to apply on draggables
+
+            ...draggableStyle,
+            ...activeTransform
+        };
+    };
 
     function HandleChangeAudioType(event) {
         setType(event.target.value);
@@ -86,70 +110,82 @@ const AudioElem = ({ audios, id, setAudios, deleteAudio }) => {
         }
     }
     return (
-        <div className="level box mb-1">
-            <div className="level-left">
-                <div className="field has-addons level-item">
-                    <div className="control">
-                        <div className="select">
-                            <select onChange={HandleChangeAudioType} value={type}>
-                                <option value="silence">Silence</option>
-                                <option value="import">Importer un fichier audio</option>
-                                {/* <option value="record">Enregistrer audio</option> */}
-                                <option value="standard">Choisir un son</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div className="control">
-                        {type == "import" && <input type="file" className="input" onChange={handleFileSelected} />}
-                        {type == "silence" && (<div><input type="number" style={{ width: '150px' }} className="input" value={duration} onChange={handleSilenceLength} />
-                            <span style={{ display: "inline-flex", alignItems: "center", height: "40px" }}>secondes</span>
-                        </div>)}
-                        {type == "standard" && (
-                            <div className="select">
-                                <select value={audioPath || '/audios/delfInstruction.mp3'} onChange={handleStandardFileSelected} >
-                                    <option value="/audios/bip.mp3">bip</option>
-                                    <option value="/audios/delfInstruction.mp3">Instruction delf</option>
-                                    <option value="/audios/fin.mp3">fin de l'épreuve</option>
-                                </select>
+        <Draggable draggableId={`draggable-${id}`} index={index}>
+            {(provided, snapshot) => {
+                return (
+                    <div id={`draggable-${id}`} className="level box mb-1"
+                        {...provided.dragHandleProps}
+                        {...provided.draggableProps}
+                        ref={provided.innerRef}
+                        style={getItemStyle(
+                            snapshot.isDragging,
+                            provided.draggableProps.style
+                        )}>
+                        <div className="level-left">
+                            <div className="field has-addons level-item">
+                                <div className="control">
+                                    <div className="select">
+                                        <select onChange={HandleChangeAudioType} value={type}>
+                                            <option value="silence">Silence</option>
+                                            <option value="import">Importer un fichier audio</option>
+                                            {/* <option value="record">Enregistrer audio</option> */}
+                                            <option value="standard">Choisir un son</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div className="control">
+                                    {type == "import" && <input type="file" className="input" onChange={handleFileSelected} />}
+                                    {type == "silence" && (<div><input type="number" style={{ width: '150px' }} className="input" value={duration} onChange={handleSilenceLength} />
+                                        <span style={{ display: "inline-flex", alignItems: "center", height: "40px" }}>secondes</span>
+                                    </div>)}
+                                    {type == "standard" && (
+                                        <div className="select">
+                                            <select value={audioPath || '/audios/delfInstruction.mp3'} onChange={handleStandardFileSelected} >
+                                                <option value="/audios/bip.mp3">bip</option>
+                                                <option value="/audios/delfInstruction.mp3">Instruction delf</option>
+                                                <option value="/audios/fin.mp3">fin de l'épreuve</option>
+                                            </select>
+                                        </div>
+                                    )}
+                                    {/* {type == "record" && <button className="button" onClick={record} >Record</button>} */}
+                                </div>
+
+
                             </div>
-                        )}
-                        {/* {type == "record" && <button className="button" onClick={record} >Record</button>} */}
-                    </div>
+                        </div>
+                        <div className="level-right">
 
-
-                </div>
-            </div>
-            <div className="level-right">
-
-                <div className="control level-item">
-                    {(type != "silence" && audioPath != null) && (
-                        isPlaying ? (<>
-                            <button onClick={pause} className="button">
-                                <span className="icon">
-                                    <i className="fas fa-pause"></i>
-                                </span>
-                            </button>
-                            <button onClick={stop} className="button">
-                                <span className="icon">
-                                    <i className="fas fa-stop"></i>
-                                </span>
-                            </button></>
-                        ) : (
-                            <button className="button" onClick={play}>
-                                <span className="icon">
-                                    <i className="fas fa-play"></i>
-                                </span>
-                            </button>
-                        )
-                    )
-                    }
-                    <audio controls style={{ display: "none" }} ref={audioReader} onEnded={stop}><source src={audioPath}></source></audio>
-                </div>
-                <div className="control level-item ml-3">
-                    <button className="button is-danger" onClick={() => { deleteAudio(id) }}><span className="icon"><i className="fas fa-trash"></i></span></button>
-                </div>
-            </div>
-        </div>
+                            <div className="control level-item">
+                                {(type != "silence" && audioPath != null) && (
+                                    isPlaying ? (<>
+                                        <button onClick={pause} className="button">
+                                            <span className="icon">
+                                                <i className="fas fa-pause"></i>
+                                            </span>
+                                        </button>
+                                        <button onClick={stop} className="button">
+                                            <span className="icon">
+                                                <i className="fas fa-stop"></i>
+                                            </span>
+                                        </button></>
+                                    ) : (
+                                        <button className="button" onClick={play}>
+                                            <span className="icon">
+                                                <i className="fas fa-play"></i>
+                                            </span>
+                                        </button>
+                                    )
+                                )
+                                }
+                                <audio controls style={{ display: "none" }} ref={audioReader} onEnded={stop}><source src={audioPath}></source></audio>
+                            </div>
+                            <div className="control level-item ml-3">
+                                <button className="button is-danger" onClick={() => { deleteAudio(id) }}><span className="icon"><i className="fas fa-trash"></i></span></button>
+                            </div>
+                        </div>
+                    </div>)
+            }}
+        </Draggable>
     )
 }
 
