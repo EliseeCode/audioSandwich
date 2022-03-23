@@ -203,19 +203,13 @@ const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
                                             </select>
                                         </div>
                                     )}
-                                    {type == "record" && (isRecording ? (
-                                        <button onClick={record} className="button">
-                                            <span className="icon">
-                                                <i className="fas fa-stop"></i>
-                                            </span>
-                                        </button>
-                                    ) : (
-                                        <button className="button" onClick={record}>
+                                    {type == "record" && (
+                                        <button onClick={record} style={{ color: isRecording ? 'red' : 'black' }} className="button">
                                             <span className="icon">
                                                 <i className="fas fa-microphone"></i>
                                             </span>
                                         </button>
-                                    ))}
+                                    )}
                                 </div>
 
 
@@ -244,7 +238,7 @@ const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
                                     )
                                 )
                                 }
-                                <audio controls onCanPlayThrough={() => { setIsReadyToPlay(true); }} preload="auto" style={{ display: "none" }} ref={audioReader} onEnded={stop}><source src={audioPath}></source></audio>
+                                <audio controls onCanPlayThrough={() => { setIsReadyToPlay(true); }} style={{ display: "none" }} ref={audioReader} onEnded={stop}><source src={audioPath}></source></audio>
                                 {/* {isReadyToPlay ? "ready" : "Not yet"} */}
                             </div>
                             <div className="control level-item ml-3">
