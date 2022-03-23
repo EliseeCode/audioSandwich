@@ -8,10 +8,14 @@ const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
     const [audioPath, setAudioPath] = useState(audio.path);
     const [file, setFile] = useState(audio.file);
     const [isPlaying, setIsPlaying] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const [audio_context, setAudioContext] = useState(new AudioContext);
+    const [recorder, setRecorder] = useState(null);
+    const [isReadyToPlay, setIsReadyToPlay] = useState(false);
     //const [reader, setReader] = useState(new FileReader());
     const audioReader = useRef();
     //useEffect for reader to preview fileinput
-    useEffect(() => {
+    useEffect(async () => {
         switch (type) {
             case "silence":
                 setDuration(duration || 10);
@@ -23,6 +27,23 @@ const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
                 setFile(null);
                 break;
             case "record":
+                try {
+                    // webkit shim
+                    window.AudioContext = window.AudioContext || window.webkitAudioContext;
+                    navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia;
+                    window.URL = window.URL || window.webkitURL;
+
+                    //setAudioContext();
+                    console.log('Audio context set up.');
+                    console.log('navigator.getUserMedia ' + (navigator.getUserMedia ? 'available.' : 'not present!'));
+                } catch (e) {
+                    alert('No web audio support in this browser!');
+                }
+
+                navigator.getUserMedia({ audio: true }, startUserMedia, function (e) {
+                    console.log('No live audio input: ' + e);
+                });
+
                 setAudioPath(null);
                 break;
         }
@@ -46,9 +67,29 @@ const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
     useEffect(() => {
         if (audioReader.current) {
             audioReader.current.pause();
+            setIsReadyToPlay(false);
             audioReader.current.load();
+
         }
     }, [audioPath])
+
+    useEffect(() => {
+        if (isRecording) {
+            console.log("isrecording");
+            recorder && recorder.record();
+        }
+        else {
+            console.log("notRecording");
+            recorder && recorder.stop();
+            recorder && recorder.exportWAV(async function (blob) {
+                console.log(blob);
+                var url = URL.createObjectURL(blob);
+                console.log(url);
+                setAudioPath(url);
+                recorder && recorder.clear();
+            });
+        }
+    }, [isRecording])
 
     const grid = 8;
 
@@ -109,6 +150,21 @@ const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
             setIsPlaying(!isPlaying);
         }
     }
+    function record() {
+        setIsRecording(!isRecording);
+    }
+
+    function startUserMedia(stream) {
+        var input = audio_context.createMediaStreamSource(stream);
+        console.log('Media stream created.');
+
+        // Uncomment if you want the audio to feedback directly
+        //input.connect(audio_context.destination);
+        //__log('Input connected to audio context destination.');
+
+        setRecorder(new Recorder(input));
+        console.log('Recorder initialised.');
+    }
     return (
         <Draggable draggableId={`draggable-${id}`} index={index}>
             {(provided, snapshot) => {
@@ -128,7 +184,7 @@ const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
                                         <select onChange={HandleChangeAudioType} value={type}>
                                             <option value="silence">Silence</option>
                                             <option value="import">Importer un fichier audio</option>
-                                            {/* <option value="record">Enregistrer audio</option> */}
+                                            <option value="record">Enregistrer audio</option>
                                             <option value="standard">Choisir un son</option>
                                         </select>
                                     </div>
@@ -147,14 +203,25 @@ const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
                                             </select>
                                         </div>
                                     )}
-                                    {/* {type == "record" && <button className="button" onClick={record} >Record</button>} */}
+                                    {type == "record" && (isRecording ? (
+                                        <button onClick={record} className="button">
+                                            <span className="icon">
+                                                <i className="fas fa-stop"></i>
+                                            </span>
+                                        </button>
+                                    ) : (
+                                        <button className="button" onClick={record}>
+                                            <span className="icon">
+                                                <i className="fas fa-microphone"></i>
+                                            </span>
+                                        </button>
+                                    ))}
                                 </div>
 
 
                             </div>
                         </div>
                         <div className="level-right">
-
                             <div className="control level-item">
                                 {(type != "silence" && audioPath != null) && (
                                     isPlaying ? (<>
@@ -177,7 +244,8 @@ const AudioElem = ({ index, audios, id, setAudios, deleteAudio }) => {
                                     )
                                 )
                                 }
-                                <audio controls style={{ display: "none" }} ref={audioReader} onEnded={stop}><source src={audioPath}></source></audio>
+                                <audio controls onCanPlayThrough={() => { setIsReadyToPlay(true); }} preload="auto" style={{ display: "none" }} ref={audioReader} onEnded={stop}><source src={audioPath}></source></audio>
+                                {/* {isReadyToPlay ? "ready" : "Not yet"} */}
                             </div>
                             <div className="control level-item ml-3">
                                 <button className="button is-danger" onClick={() => { deleteAudio(id) }}><span className="icon"><i className="fas fa-trash"></i></span></button>

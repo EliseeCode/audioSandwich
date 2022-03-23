@@ -44,7 +44,7 @@ function App() {
   const downloadAudios = async () => {
     $('.loader-wrapper').addClass('is-active');
     //output = await buildSource();
-    await crunker.download(output.blob, "delfAudio");
+    await crunker.download(output.blob, "yourAudio");
     $('.loader-wrapper').removeClass('is-active');
   }
   function sleep(ms) {
@@ -61,6 +61,9 @@ function App() {
             crunkerInputs.push(await createSilentAudio(audio.duration, 44100));
             break;
           case "standard":
+            crunkerInputs.push(audio.path);
+            break;
+          case "record":
             crunkerInputs.push(audio.path);
             break;
           case "import":
