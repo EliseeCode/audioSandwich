@@ -144,7 +144,7 @@ function App() {
           <div className="card p-2">
             <div className="card-header">
               <div className="card-header-title">
-                Faites-vous un petit sandwitch audio !
+                Faites-vous un petit sandwich audio !
               </div>
             </div>
             <div className="card-content">

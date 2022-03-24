@@ -22,9 +22,9 @@ jobs:
           script: |
             # Copy and build new version
             cd /home/elisee/www
-            rm -rf audioSandwitch-new
-            cp -r audioSandwitch audioSandwitch-new
-            cd audioSandwitch-new
+            rm -rf audioSandwich-new
+            cp -r audioSandwich audioSandwich-new
+            cd audioSandwich-new
             git checkout main
             git reset --hard origin/main
             git pull
@@ -37,8 +37,8 @@ jobs:
             #node ace db:seed --force
             # Replace current version with the new one
             cd ..
-            mv audioSandwitch audioSandwitch-old
-            mv audioSandwitch-new audioSandwitch
+            mv audioSandwich audioSandwich-old
+            mv audioSandwich-new audioSandwich
             # Restart server
-            cd audioSandwitch
-            rm -rf ../audioSandwitch-old
+            cd audioSandwich
+            rm -rf ../audioSandwich-old

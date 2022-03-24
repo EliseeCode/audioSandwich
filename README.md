@@ -1,4 +1,4 @@
-# Getting Started with AudioSandwitch
+# Getting Started with AudioSandwich
 
 This project was bootstrapped with [Crunker](https://github.com/jackedgson/crunker).
 
