@@ -178,7 +178,7 @@ function App() {
               </DragDropContext>
               <hr />
               <button className="button" onClick={addAudios}>
-                Ajouter Audio
+                +
               </button>
             </div>
 
