@@ -42,10 +42,10 @@ function App() {
 
 
   const downloadAudios = async () => {
-    $('.loader-wrapper').addClass('is-active');
+    //$('.loader-wrapper').addClass('is-active');
     //output = await buildSource();
     await crunker.download(output.blob, "yourAudio");
-    $('.loader-wrapper').removeClass('is-active');
+    //$('.loader-wrapper').removeClass('is-active');
   }
   function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
@@ -101,8 +101,9 @@ function App() {
 
 
   useEffect(() => {
+    console.log(audioOrder)
+    setNextId(Math.max(...audioOrder) + 1);
     if (audioUpToDate) {
-      setNextId(Math.max(...audioOrder) + 1);
       setAudioUpToDate(false);
     }
   }, [audios, audioOrder])
@@ -118,6 +119,7 @@ function App() {
   }, [isplaying])
 
   const addAudios = async () => {
+    console.log('nextId', nextId);
     setAudios({ ...audios, [nextId]: { name: "Silence 10s", type: "silence", duration: 10, path: null, file: null, id: nextId } });
     setAudioOrder([...audioOrder, nextId]);
   }
